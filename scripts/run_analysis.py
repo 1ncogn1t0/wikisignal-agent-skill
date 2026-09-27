@@ -22,7 +22,7 @@ def run_pipeline(topic: str, langs_str: str, source_lang: str = "en", years: int
     for lang in langs:
         if lang not in titles:
             metrics_summary[lang] = {
-                "error": f"Не вдалося знайти статтю у {lang}.wikipedia."
+                "error": f"Article not found in {lang}.wikipedia."
             }
             continue
 
@@ -40,13 +40,19 @@ def run_pipeline(topic: str, langs_str: str, source_lang: str = "en", years: int
 
             metrics_summary[lang] = {
                 "resolved_title": title,
+                "tam_annual_views": analysis["tam_annual_views"],
                 "daily_avg": analysis["daily_avg"],
                 "yoy_growth_percent": analysis["yoy_growth_percent"],
+                "qoq_growth_percent": analysis["qoq_growth_percent"],
                 "spike_share_percent": analysis["spike_share_percent"],
                 "weekend_ratio_percent": analysis["weekend_ratio_percent"],
+                "volatility_cv": analysis["volatility_cv"],
                 "confidence_score": analysis["confidence_score"],
+                "hitl_required": analysis["hitl_required"],
+                "hitl_reasons": analysis["hitl_reasons"],
                 "mdi_score": analysis["mdi_score"],
-                "mdi_tier": analysis["mdi_tier"]
+                "mdi_tier": analysis["mdi_tier"],
+                "mdi_action": analysis["mdi_action"]
             }
             series_map[lang] = analysis
 
@@ -63,7 +69,7 @@ def run_pipeline(topic: str, langs_str: str, source_lang: str = "en", years: int
 
     if not series_map:
         return {
-            "error": "Failed to retrieve valid pageview data for given languages.",
+            "error": "Failed to retrieve valid telemetry for the requested scope.",
             "details": metrics_summary
         }
 
@@ -85,13 +91,13 @@ def run_pipeline(topic: str, langs_str: str, source_lang: str = "en", years: int
 
 
 def main():
-    parser = argparse.ArgumentParser(description="WikiSignal CLI: market demand analysis.")
-    parser.add_argument("--topic", required=True, help="Topic query")
-    parser.add_argument("--source_lang", default="en", help="Language the --topic text is written in")
-    parser.add_argument("--langs", type=str, default="en,uk", help="Comma-separated languages (default: en,uk)")
-    parser.add_argument("--years", type=int, default=2, help="Historical horizon in years")
+    parser = argparse.ArgumentParser(description="WikiSignal Enterprise CLI")
+    parser.add_argument("--topic", required=True, help="Product or niche name")
+    parser.add_argument("--source_lang", default="en", help="Language for Wikidata disambiguation")
+    parser.add_argument("--langs", type=str, default="en,uk", help="Target market ISO codes")
+    parser.add_argument("--years", type=int, default=2, help="Historical analysis window")
     parser.add_argument("--format", choices=["json", "full"], default="full", help="'json' or 'full'")
-    parser.add_argument("--output_dir", default="output", help="Directory for artifacts")
+    parser.add_argument("--output_dir", default="output", help="Artifacts storage")
 
     args = parser.parse_args()
 
@@ -104,10 +110,7 @@ def main():
         output_dir=args.output_dir
     )
 
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-
-    if "error" in result and not result.get("markets"):
-        sys.exit(1)
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=lambda x: float(x) if hasattr(x, "__float__") else str(x)))
 
 
 if __name__ == "__main__":
