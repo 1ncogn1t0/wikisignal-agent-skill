@@ -40,3 +40,7 @@ build/
 models/
 !models/.gitkeep
 
+.env
+__pycache__/
+*.pyc
+output/
