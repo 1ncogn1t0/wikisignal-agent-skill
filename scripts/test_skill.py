@@ -1,11 +1,16 @@
+import os
 import subprocess
 import json
 import sys
 
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+RUN_ANALYSIS_PATH = os.path.join(SCRIPTS_DIR, "run_analysis.py")
+
 
 def run(topic, source_lang, langs, years=2, fmt="full"):
     cmd = [
-        sys.executable, "scripts/run_analysis.py",
+        sys.executable,
+        RUN_ANALYSIS_PATH,
         "--topic", topic,
         "--source_lang", source_lang,
         "--langs", langs,
